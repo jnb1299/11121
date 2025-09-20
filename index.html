@@ -124,7 +124,7 @@
     <button class="menu-button skills-btn" onclick="setCategory('skills')">Skills</button>
     <button class="menu-button traits-btn" onclick="setCategory('traits')">Traits</button>
     <button class="menu-button items-btn" onclick="setCategory('items')">Items</button>
-    <button class="menu-button powers-btn" onclick="setCategory('powers')">Poderes</button>
+    <button class="menu-button powers-btn" onclick="setCategory('powers')">Powers</button>
   </div>
 
   <!-- Contenido principal -->
@@ -132,7 +132,7 @@
     <h1>Chaos Gacha</h1>
 
     <div class="card" id="gachaCard">
-      <strong>Click para Girar</strong>
+      <strong>Click to roll</strong>
     </div>
 
     <div id="probabilities" class="probabilities" aria-live="polite">
@@ -149,8 +149,8 @@
   <script>
     // Probabilidades por rareza (weights). Keys should match data.rarity values but we normalize when matching.
     const rarityChances = {
-      'Common': 30,
-      'Rare': 10,
+      'Common': 40,
+      'Rare': 20,
       // data used "Ultra Rare" (with space) in some entries — handle both by normalization in logic
       'Ultra Rare': 7,
       'Legendary': 2,
@@ -391,7 +391,7 @@ const data = {
     function rollGacha() {
       const pool = data[currentCategory];
       if (!pool || pool.length === 0) {
-        infoBox.innerHTML = "⚠️ No hay entradas en esta categoría.";
+        infoBox.innerHTML = "⚠️ No categories in this function!!.";
         return;
       }
 
@@ -473,4 +473,5 @@ const data = {
   </script>
 </body>
 </html>
+
 
