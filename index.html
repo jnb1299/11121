@@ -296,7 +296,7 @@ const data = {
     { name: "Runic Bracelet", type: "Item", rarity: "Rare", description: "Enhances spells and magical resistance." },
     { name: "Soul Gem", type: "Item", rarity: "Ultra Rare", description: "Stores life energy for reuse." },
     { name: "Divine Relic", type: "Item", rarity: "Divine", description: "Object with concentrated celestial power." } 
-    { name: "Screwdriver", type: "Item", rarity: "Common", description: "Simple tool for screws." },
+  ,{ name: "Screwdriver", type: "Item", rarity: "Common", description: "Simple tool for screws." },
     { name: "Knife", type: "Item", rarity: "Common", description: "Basic cutting blade." },
   { name: "Hammer", type: "Item", rarity: "Common", description: "Useful for hitting nails." },
   { name: "Wrench", type: "Item", rarity: "Common", description: "Adjusts bolts and nuts." },
@@ -361,17 +361,20 @@ const data = {
 };
 
 
-    let currentCategory = "skills"; // por defecto
+  let currentCategory = "skills"; // por defecto
 
-    const card = document.getElementById("gachaCard");
-    const infoBox = document.getElementById("info");
-    const rollButton = document.getElementById("rollButton");
+  // DOM elements will be resolved after DOMContentLoaded to avoid null lookups
+  let card, infoBox, rollButton;
 
     function setCategory(category) {
       currentCategory = category;
-      infoBox.innerHTML = `<strong>Category Selected:</strong> ${category.toUpperCase()}<br><br>Roll to see your result.`;
-      card.innerHTML = `<strong>${category.toUpperCase()}</strong>`;
-      card.className = "card"; // reset estilos
+      if (!infoBox) infoBox = document.getElementById('info');
+      if (!card) card = document.getElementById('gachaCard');
+      if (infoBox) infoBox.innerHTML = `<strong>Category Selected:</strong> ${category.toUpperCase()}<br><br>Roll to see your result.`;
+      if (card) {
+        card.innerHTML = `<strong>${category.toUpperCase()}</strong>`;
+        card.className = "card"; // reset estilos
+      }
     }
 
     // Render the on-screen probability legend
@@ -478,12 +481,19 @@ const data = {
     }
 
     rollButton.addEventListener("click", rollGacha);
-    card.addEventListener("click", rollGacha);
-    // populate probability legend on load
-    renderProbabilities();
+    // Attach listeners after DOM is ready and render probabilities
+    window.addEventListener('DOMContentLoaded', () => {
+      card = document.getElementById('gachaCard');
+      infoBox = document.getElementById('info');
+      rollButton = document.getElementById('rollButton');
+      if (rollButton) rollButton.addEventListener('click', rollGacha);
+      if (card) card.addEventListener('click', rollGacha);
+      renderProbabilities();
+    });
   </script>
 </body>
 </html>
+
 
 
 
