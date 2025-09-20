@@ -480,7 +480,6 @@ const data = {
       return entries.length ? entries[entries.length - 1][0] : 'Common'; // fallback
     }
 
-    rollButton.addEventListener("click", rollGacha);
     // Attach listeners after DOM is ready and render probabilities
     window.addEventListener('DOMContentLoaded', () => {
       card = document.getElementById('gachaCard');
@@ -493,6 +492,8 @@ const data = {
   </script>
 </body>
 </html>
+
+
 
 
 
