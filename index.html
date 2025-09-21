@@ -1,167 +1,185 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chaos Gacha</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chaos Gacha — Enhanced</title>
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      gap: 40px;
+    :root{
+      --bg:#08070b;
+      --panel:#0f1115;
+      --muted:#9aa0a6;
+      --accent: #ff8a00;
+      --glass: rgba(255,255,255,0.03);
+      --radius:12px;
+      --card-w:260px;
+      --card-h:140px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#e6edf3;background:linear-gradient(180deg,var(--bg),#060608);}
+
+    .app{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:260px 1fr;
+      gap:28px;
+      padding:28px;
+      align-items:start;
     }
 
-    h1 {
-      color: orange;
-      margin: 10px;
+    /* SIDE */
+    .side{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:18px;
+      border:1px solid rgba(255,255,255,0.03);
+      min-height:220px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .logo{font-weight:800;font-size:18px;color:var(--accent);letter-spacing:0.6px}
+    .menu{display:flex;flex-direction:column;gap:8px}
+    .menu button{
+      background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;text-align:left;cursor:pointer;font-weight:600;transition:all .18s;display:flex;justify-content:space-between;align-items:center;
+    }
+    .menu button.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff;border-color:rgba(255,255,255,0.06);transform:translateX(3px)}
+    .menu button:hover{transform:translateX(2px)}
+
+    .probabilities{margin-top:8px;background:var(--glass);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+    .prob-row{display:flex;justify-content:space-between;margin:4px 0}
+
+    /* MAIN */
+    .main{display:flex;flex-direction:column;gap:18px}
+    .top-row{display:flex;gap:18px;align-items:flex-start}
+
+    .card-wrap{width:var(--card-w);height:var(--card-h);perspective:1000px;position:relative}
+    .gacha-card{
+      width:100%;height:100%;border-radius:12px;background:linear-gradient(180deg,#0b0c10, #0f1115);border:2px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);
+      transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.9,.3,1), box-shadow .25s;
+    }
+    .gacha-card.rolling{transform:rotateY(180deg) scale(1.02);}
+
+    .gacha-front,.gacha-back{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;backface-visibility:hidden;padding:12px}
+    .gacha-back{transform:rotateY(180deg);}
+
+    .gacha-title{font-weight:800;color:var(--accent);letter-spacing:0.6px}
+    .gacha-sub{font-size:13px;color:var(--muted);margin-top:6px}
+
+    .rarity-badge{position:absolute;top:10px;left:10px;padding:6px 9px;border-radius:999px;font-weight:700;font-size:12px;color:#0b0c10;background:linear-gradient(90deg,#fff, #eee);opacity:0.95}
+
+    /* Rarity colors */
+    .rarity-common{--r:#9aa0a6}
+    .rarity-rare{--r:#3b82f6}
+    .rarity-ultra-rare{--r:#7c3aed}
+    .rarity-legendary{--r:#f59e0b}
+    .rarity-mythical{--r:#ec4899}
+    .rarity-divine{--r:#ff5a3c}
+    .rarity-primordial{--r:#00b894}
+    .rarity-transcendental{--r:#00bcd4}
+    .rarity-limitless{--r:#ff0077}
+    .rarity-unbounded{--r:#ffd700}
+    .rarity-garbage{--r:#6b6b6b} 
+
+    .gacha-card .glow{position:absolute;inset:-20%;filter:blur(28px);opacity:0;transition:opacity .25s}
+    .gacha-card.show-glow .glow{opacity:0.9}
+
+    .gacha-card .name{font-weight:800;font-size:16px}
+    .gacha-card .type{font-size:12px;color:var(--muted);margin-top:6px}
+
+    .controls{display:flex;flex-direction:column;gap:8px;align-items:center}
+    .btn{padding:10px 18px;border-radius:10px;border:none;background:var(--accent);color:#071018;font-weight:800;cursor:pointer;letter-spacing:0.6px;box-shadow:0 6px 18px rgba(255,138,0,0.12)}
+    .btn:disabled{opacity:.5;cursor:default}
+
+    .info{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-height:120px}
+
+    /* small screen */
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr;align-items:center;padding:14px}
+      .side{order:2;width:100%}
+      .top-row{flex-direction:column;align-items:center}
     }
 
-    .side-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    /* particles canvas overlay */
+    #fx-canvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999}
 
-    .menu-button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-      color: white;
-      transition: 0.3s;
-    }
+    /* tiny sparkle */
+    .spark{position:absolute; width:6px;height:6px;border-radius:50%;opacity:0;transform:translate(-50%,-50%);pointer-events:none}
 
-    .menu-button:hover {
-      opacity: 0.8;
-    }
-
-    .skills-btn { background: #007bff; }
-    .traits-btn { background: #28a745; }
-    .items-btn { background: #ffc107; color: black; }
-    .powers-btn { background: #6f42c1; }
-
-    .main-content {
-      text-align: center;
-    }
-
-    .card {
-      width: 220px;
-      height: 120px;
-      background: black;
-      border: 3px solid #666;
-      border-radius: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      margin: 20px auto;
-      cursor: pointer;
-      transition: transform 0.5s ease;
-    }
-
-    .card.spin {
-      transform: rotateY(360deg);
-    }
-
-    /* Colores según rareza */
-    .common { border: 3px solid gray; }
-    .rare { border: 3px solid blue; }
-    .legendary { border: 3px solid gold; }
-    .mythical { border: 3px solid pink; }
-    .divine { border: 3px solid orange; }
-  .transcendent { border: 3px solid red; }
-  .ultra-rare { border: 3px solid purple; }
-
-    .info-box {
-      background: #222;
-      border: 2px solid orange;
-      padding: 15px;
-      margin: 20px auto;
-      width: 300px;
-      text-align: left;
-      border-radius: 5px;
-      min-height: 120px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background: orange;
-      color: black;
-    }
-
-    button:hover {
-      background: gold;
-    }
-    .probabilities {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      padding: 10px;
-      width: 300px;
-      margin: 0 auto 10px auto;
-      border-radius: 6px;
-      text-align: left;
-      font-size: 14px;
-    }
-    .prob-row { display:flex; justify-content:space-between; padding:4px 0; }
-    .prob-name { text-transform: capitalize; }
   </style>
 </head>
 <body>
-  <!-- Menú izquierdo -->
-  <div class="side-menu">
-    <button class="menu-button skills-btn" onclick="setCategory('skills')">Skills</button>
-    <button class="menu-button traits-btn" onclick="setCategory('traits')">Traits</button>
-    <button class="menu-button items-btn" onclick="setCategory('items')">Items</button>
-    <button class="menu-button powers-btn" onclick="setCategory('powers')">Powers</button>
-  </div>
+  <div class="app">
+    <aside class="side" aria-label="menu">
+      <div class="logo">Chaos GACHA — Enhanced</div>
+      <div class="menu" role="tablist" aria-orientation="vertical">
+        <button id="tab-skills" data-cat="skills" class="active">Skills <span style="opacity:.6;font-weight:600">(skills)</span></button>
+        <button id="tab-traits" data-cat="traits">Traits</button>
+        <button id="tab-items" data-cat="items">Items</button>
+        <button id="tab-powers" data-cat="powers">Powers</button>
+      </div>
+      <div class="probabilities" id="probabilities" aria-live="polite"></div>
+      <small style="color:var(--muted);margin-top:8px;display:block">Tip: click la carta o usa el botón para tirar.</small>
+    </aside>
 
-  <!-- Contenido principal -->
-  <div class="main-content">
-    <h1>Chaos Gacha</h1>
+    <main class="main">
+      <div class="top-row">
+        <div class="card-wrap">
+          <div id="gachaCard" class="gacha-card" role="button" aria-pressed="false" tabindex="0">
+            <div class="gacha-front">
+              <div class="rarity-badge" id="rarityBadge" style="display:none">Common</div>
+              <div class="name">Click to roll</div>
+              <div class="type">Category: skills</div>
+              <div class="glow" id="glowEl"></div>
+            </div>
+            <div class="gacha-back">
+              <div style="font-weight:800;color:var(--accent)">Result</div>
+              <div id="backDesc" style="font-size:13px;color:var(--muted);margin-top:8px;max-width:240px;text-align:center"></div>
+            </div>
+          </div>
+        </div>
 
-    <div class="card" id="gachaCard">
-      <strong>Click to roll</strong>
-    </div>
+        <div class="controls">
+          <button id="rollButton" class="btn">🎲 Roll</button>
+          <label style="font-size:13px;color:var(--muted)">Showing: <strong id="currentCategoryLabel">skills</strong></label>
+          <div style="margin-top:6px">
+            <button id="copyBtn" class="btn" style="background:#334155;color:#fff;padding:8px 12px;font-weight:700">Copy result</button>
+          </div>
+        </div>
 
-    <div id="probabilities" class="probabilities" aria-live="polite">
-      <!-- probabilities rendered here -->
-    </div>
+        <canvas id="fx-canvas" aria-hidden="true"></canvas>
+      </div>
 
-    <button id="rollButton">🎲 Roll Gacha</button>
+      <section class="info" id="infoBox" aria-live="polite">
+        <div style="font-weight:800;color:var(--accent)">Result will appear here</div>
+        <div id="infoContent" style="margin-top:8px;color:var(--muted)">Press <strong>Roll</strong> to spin the gacha. High rarities trigger particle effects and a small audio cue.</div>
+      </section>
 
-    <div class="info-box" id="info">
-      <strong>Result goes here</strong>
-    </div>
+    </main>
   </div>
 
   <script>
-    // Probabilidades por rareza (weights). Keys should match data.rarity values but we normalize when matching.
+    // --- CONFIG ---
     const rarityChances = {
-      'Common': 40,
-      'Rare': 20,
-      // data used "Ultra Rare" (with space) in some entries — handle both by normalization in logic
-      'Ultra Rare': 7,
+      'Common': 35,
+      'Garbage': 10,
+      'Rare': 18,
+      'Ultra Rare': 6,
       'Legendary': 2,
       'Mythical': 1,
-      'Divine': 0.1,
+      'Divine': 0.5,
+      'Primordial': 0.3,
+      'Transcendental': 0.15,
+      'Limitless': 0.08,
+      'Unbounded': 0.02
     };
 
-    // Base de datos
-    // --- EXPANDED DATABASE (paste this above your existing code) ---
-const data = {
-  skills: [
+    const rarityOrder = ['Unbounded','Limitless','Transcendental','Primordial','Divine','Mythical','Legendary','Ultra Rare','Rare','Common','Garbage'];
+
+    // raw data (you pasted a large db) -> we'll normalize on load so the original entries don't need editing
+    const rawData = {
+      skills: [
     { name: "Sharingan", type: "Skill", rarity: "Legendary", description: "Eye that copies and anticipates movements." },
     { name: "Mangekyō Sharingan", type: "Skill", rarity: "Mythical", description: "Extremely powerful ocular techniques." },
     { name: "Eternal Mangekyō", type: "Skill", rarity: "Divine", description: "Eternal version without ocular weaknesses." },
@@ -204,7 +222,12 @@ const data = {
     { name: "Energy Sensing", type: "Skill", rarity: "Common", description: "Detect nearby energy flows." },
     { name: "Weapon Mastery: Katana", type: "Skill", rarity: "Rare", description: "Advanced katana cutting mastery." },
     { name: "Puppet Control", type: "Skill", rarity: "Rare", description: "Manipulate puppets or others' bodies." },
-    { name: "Cursed Technique: Blood Manipulation", type: "Skill", rarity: "Ultra Rare", description: "Use own blood as weapon or seal." }
+    { name: "Cursed Technique: Blood Manipulation", type: "Skill", rarity: "Ultra Rare", description: "Use own blood as weapon or seal." },
+    { name: "Haki: Observation", type: "Skill", rarity: "Ultra Rare", description: "See subtle movements and precognition (from One Piece)." },
+    { name: "Haki: Armament", type: "Skill", rarity: "Rare", description: "Hardening and projection of will (from One Piece)." },
+    { name: "Haki: Conqueror", type: "Skill", rarity: "Legendary", description: "Overwhelm wills and assert dominance (from One Piece)." },
+    { name: "Bankai", type: "Skill", rarity: "Legendary", description: "Final devastating form of a Zanpakutō (from Bleach)." },
+    { name: "Domain: Hollow Realm", type: "Skill", rarity: "Mythical", description: "A domain that distorts hollows and souls." }
   ],
 
   traits: [
@@ -250,7 +273,8 @@ const data = {
     { name: "Runic Tattoo", type: "Trait", rarity: "Rare", description: "Marks that enhance spells." },
     { name: "Bound Servant", type: "Trait", rarity: "Rare", description: "Allied spirit obeys your orders." },
     { name: "Eternal Youth", type: "Trait", rarity: "Legendary", description: "Ages extremely slowly." },
-    { name: "Cosmic Awareness", type: "Trait", rarity: "Divine", description: "Perceive global cosmic patterns." }
+    { name: "Cosmic Awareness", type: "Trait", rarity: "Divine", description: "Perceive global cosmic patterns." },
+    { name: "Otaku Knowledge", type: "Trait", rarity: "Common", description: "Intense anime knowledge and references." }
   ],
 
   items: [
@@ -295,18 +319,26 @@ const data = {
     { name: "Celestial Map", type: "Item", rarity: "Mythical", description: "Locates portals and astral paths." },
     { name: "Runic Bracelet", type: "Item", rarity: "Rare", description: "Enhances spells and magical resistance." },
     { name: "Soul Gem", type: "Item", rarity: "Ultra Rare", description: "Stores life energy for reuse." },
-    { name: "Divine Relic", type: "Item", rarity: "Divine", description: "Object with concentrated celestial power." } 
-  ,{ name: "Screwdriver", type: "Item", rarity: "Common", description: "Simple tool for screws." },
+    { name: "Divine Relic", type: "Item", rarity: "Divine", description: "Object with concentrated celestial power." },
+    { name: "Screwdriver", type: "Item", rarity: "Common", description: "Simple tool for screws." },
     { name: "Knife", type: "Item", rarity: "Common", description: "Basic cutting blade." },
-  { name: "Hammer", type: "Item", rarity: "Common", description: "Useful for hitting nails." },
-  { name: "Wrench", type: "Item", rarity: "Common", description: "Adjusts bolts and nuts." },
-  { name: "Nail", type: "Item", rarity: "Common", description: "Small metal spike." },
-  { name: "Screw", type: "Item", rarity: "Common", description: "Threaded fastener for construction." },
-  { name: "Rope", type: "Item", rarity: "Common", description: "Sturdy cord for tying things." },
-  { name: "Flashlight", type: "Item", rarity: "Common", description: "Portable light source." },
-  { name: "Backpack", type: "Item", rarity: "Common", description: "Carry items easily." },
-  { name: "Bottle of Water", type: "Item", rarity: "Common", description: "Hydration on the go." },
-  { name: "Bandage", type: "Item", rarity: "Common", description: "Basic first aid for cuts." } 
+    { name: "Hammer", type: "Item", rarity: "Common", description: "Useful for hitting nails." },
+    { name: "Wrench", type: "Item", rarity: "Common", description: "Adjusts bolts and nuts." },
+    { name: "Nail", type: "Item", rarity: "Common", description: "Small metal spike." },
+    { name: "Screw", type: "Item", rarity: "Common", description: "Threaded fastener for construction." },
+    { name: "Rope", type: "Item", rarity: "Common", description: "Sturdy cord for tying things." },
+    { name: "Flashlight", type: "Item", rarity: "Common", description: "Portable light source." },
+    { name: "Backpack", type: "Item", rarity: "Common", description: "Carry items easily." },
+    { name: "Bottle of Water", type: "Item", rarity: "Common", description: "Hydration on the go." },
+    { name: "Bandage", type: "Item", rarity: "Common", description: "Basic first aid for cuts." },
+    { name: "Smartphone", type: "Item", rarity: "Common", description: "Portable communication device." },
+    { name: "Laptop", type: "Item", rarity: "Common", description: "Portable computer." },
+    { name: "Toothbrush", type: "Item", rarity: "Common", description: "Basic dental hygiene." },
+    { name: "Coffee Mug", type: "Item", rarity: "Common", description: "Container for hot drinks." },
+    { name: "Motorcycle", type: "Item", rarity: "Rare", description: "Two-wheeled vehicle for fast travel." },
+    { name: "Street Bike (Yamaha R1)", type: "Item", rarity: "Ultra Rare", description: "High-performance sport bike." },
+    { name: "Classic Scooter", type: "Item", rarity: "Common", description: "Small city scooter." },
+    { name: "Electric Bicycle", type: "Item", rarity: "Common", description: "Pedal assist urban bike." }
   ],
 
   powers: [
@@ -356,139 +388,244 @@ const data = {
     { name: "Absolute Zero", type: "Power", rarity: "Divine", description: "Freeze reality almost entirely." },
     { name: "Titan Shifting: Attack Titan", type: "Power", rarity: "Legendary", description: "Titan transformation with combative ferocity." },
     { name: "Titan Shifting: Founding Titan", type: "Power", rarity: "Divine", description: "Control other titans and memories." },
-    { name: "Titan Shifting: Colossal Titan", type: "Power", rarity: "Mythical", description: "Transformation causing massive destruction." }
+    { name: "Titan Shifting: Colossal Titan", type: "Power", rarity: "Mythical", description: "Transformation causing massive destruction." },
+    { name: "Haki: Armament", type: "Power", rarity: "Rare", description: "Hard armor-like projection of will (One Piece)." },
+    { name: "Haki: Observation", type: "Power", rarity: "Ultra Rare", description: "Heightened perception and precognition (One Piece)." },
+    { name: "Limitless (Gojo)", type: "Power", rarity: "Limitless", description: "Infinity-based spatial control (Gojo Satoru)." },
+    { name: "Transcendent Will", type: "Power", rarity: "Transcendental", description: "Power that bends the rules of fate." },
+    { name: "Primordial Force", type: "Power", rarity: "Primordial", description: "Ancient energy predating gods." },
+    { name: "Unbounded Essence", type: "Power", rarity: "Unbounded", description: "Beyond-limit force with unpredictable effects." }
   ]
 };
 
+    // --- UTILITIES ---
+    function normalizeRarity(raw){
+      if(!raw) return 'Common';
+      const s = String(raw).toLowerCase().replace(/[_\-]+/g,' ').replace(/\s+/g,' ').trim();
+      // canonicalize to display form (cover custom names used in DB)
+      if(s.includes('unbounded')) return 'Unbounded';
+      if(s.includes('limitless')) return 'Limitless';
+      if(s.includes('transcend')) return 'Transcendental';
+      if(s.includes('primordial')) return 'Primordial';
+      if(s.includes('divine')) return 'Divine';
+      if(s.includes('myth')) return 'Mythical';
+      if(s.includes('legend')) return 'Legendary';
+      if(s.includes('ultra')) return 'Ultra Rare';
+      if(s.includes('rare')) return 'Rare';
+      if(s.includes('garbage')) return 'Garbage';
+      return 'Common';
+    }
 
-  let currentCategory = "skills"; // por defecto
+    function pickRarity(){
+      // build cumulative distribution from rarityChances keys in a stable order
+      const entries = Object.entries(rarityChances).map(([k,v])=>[k, Number(v||0)]);
+      const total = entries.reduce((acc,[,w])=>acc+w,0) || 1;
+      let r = Math.random() * total; let cum = 0;
+      for(const [name,w] of entries){ cum += w; if(r <= cum) return name; }
+      // fallback to the most common (last) entry
+      return entries.length ? entries[entries.length-1][0] : 'Common';
+    }
 
-  // DOM elements will be resolved after DOMContentLoaded to avoid null lookups
-  let card, infoBox, rollButton;
-
-    function setCategory(category) {
-      currentCategory = category;
-      if (!infoBox) infoBox = document.getElementById('info');
-      if (!card) card = document.getElementById('gachaCard');
-      if (infoBox) infoBox.innerHTML = `<strong>Category Selected:</strong> ${category.toUpperCase()}<br><br>Roll to see your result.`;
-      if (card) {
-        card.innerHTML = `<strong>${category.toUpperCase()}</strong>`;
-        card.className = "card"; // reset estilos
+    // normalize database once on load -> produce pools per category and rarity for super-fast selection
+    const pools = {}; // pools[category][rarity] = []
+    function buildPools(){
+      for(const cat of Object.keys(rawData)){
+        pools[cat] = {};
+        for(const r of rarityOrder) pools[cat][r] = [];
+        const arr = rawData[cat] || [];
+        for(const it of arr){
+          const r = normalizeRarity(it.rarity);
+          // We'll store the normalized rarity too
+          const copy = Object.assign({}, it, { rarity: r });
+          pools[cat][r].push(copy);
+        }
       }
     }
 
-    // Render the on-screen probability legend
-    function renderProbabilities() {
+    // try to find an item of selected rarity; if none, search near rarities
+    function findItem(category, rarity){
+      const catPools = pools[category] || null;
+      if(!catPools) return null;
+      if(Array.isArray(catPools[rarity]) && catPools[rarity].length > 0) return randomFrom(catPools[rarity]);
+      const idx = rarityOrder.indexOf(rarity);
+      if(idx === -1){
+        // unknown rarity, try any
+        const all = [].concat(...Object.values(catPools).filter(Boolean));
+        return all.length ? randomFrom(all) : null;
+      }
+      // search nearby rarities: step 1..N, check both directions safely
+      for(let d=1; d<rarityOrder.length; d++){
+        const upIdx = idx - d; const downIdx = idx + d;
+        if(upIdx >= 0){ const up = rarityOrder[upIdx]; if((catPools[up]||[]).length>0) return randomFrom(catPools[up]); }
+        if(downIdx < rarityOrder.length){ const down = rarityOrder[downIdx]; if((catPools[down]||[]).length>0) return randomFrom(catPools[down]); }
+      }
+      // fallback any item
+      const all = [].concat(...Object.values(catPools).filter(Boolean));
+      return all.length ? randomFrom(all) : null;
+    }
+
+    function randomFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    // --- UI hooks ---
+    let currentCategory = 'skills';
+    const cardEl = document.getElementById('gachaCard');
+    const rollBtn = document.getElementById('rollButton');
+    const infoBox = document.getElementById('infoBox');
+    const infoContent = document.getElementById('infoContent');
+    const nameEl = cardEl.querySelector('.name');
+    const typeEl = cardEl.querySelector('.type');
+    const backDesc = document.getElementById('backDesc');
+    const rarityBadge = document.getElementById('rarityBadge');
+    const glowEl = document.getElementById('glowEl');
+    const catLabel = document.getElementById('currentCategoryLabel');
+
+    function renderProbabilities(){
       const container = document.getElementById('probabilities');
-      if (!container) return;
-      const entries = Object.entries(rarityChances).map(([k, v]) => ({ rarity: k, weight: Number(v) || 0 }));
-      const total = entries.reduce((s, e) => s + e.weight, 0) || 1;
-      // sort descending by weight
-      entries.sort((a, b) => b.weight - a.weight);
-
-      container.innerHTML = '<strong>Rarity Chances</strong>';
-      for (const e of entries) {
-        const pct = ((e.weight / total) * 100).toFixed(1);
-        const row = document.createElement('div');
-        row.className = 'prob-row';
-        const name = document.createElement('div');
-        name.className = 'prob-name';
-        name.textContent = e.rarity.replace(/[_\-]/g, ' ');
-        const value = document.createElement('div');
-        value.textContent = `${pct}%`;
-        row.appendChild(name);
-        row.appendChild(value);
-        container.appendChild(row);
+      const entries = Object.entries(rarityChances).map(([k,v])=>({rarity:k,weight:Number(v)||0}));
+      const total = entries.reduce((s,e)=>s+e.weight,0) || 1; entries.sort((a,b)=>b.weight-a.weight);
+      container.innerHTML = '<strong>Rarity chances</strong>';
+      for(const e of entries){
+        const pct = ((e.weight/total)*100).toFixed(1);
+        const row = document.createElement('div'); row.className='prob-row';
+        const n = document.createElement('div'); n.textContent = e.rarity; n.style.color='#fff';
+        const v = document.createElement('div'); v.textContent = pct+'%'; v.style.color='var(--muted)';
+        row.appendChild(n); row.appendChild(v); container.appendChild(row);
       }
     }
 
-    function rollGacha() {
-      const pool = data[currentCategory];
-      if (!pool || pool.length === 0) {
-        infoBox.innerHTML = "⚠️ No categories in this function!!.";
-        return;
+    // --- FX: lightweight confetti/particles ---
+  const fxCanvas = document.getElementById('fx-canvas');
+  // guard: canvas or 2d context may be unavailable in some environments
+  const ctx = (fxCanvas && fxCanvas.getContext) ? fxCanvas.getContext('2d') : null;
+    let particles = [];
+  function resizeCanvas(){ if(!fxCanvas || !ctx) return; fxCanvas.width = innerWidth * devicePixelRatio; fxCanvas.height = innerHeight * devicePixelRatio; fxCanvas.style.width = innerWidth+'px'; fxCanvas.style.height = innerHeight+'px'; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+    window.addEventListener('resize', resizeCanvas);
+
+    function spawnParticles(x,y,color,amount=40){
+      for(let i=0;i<amount;i++){
+        particles.push({
+          x, y,
+          vx:(Math.random()-0.5)*8,
+          vy:(Math.random()-0.9)*10 - 2,
+          life:Math.random()*70+40,
+          size:Math.random()*5+2,
+          color,
+        });
       }
+    }
 
-      // disable during roll to avoid overlapping animations
-      rollButton.disabled = true;
-      card.style.pointerEvents = 'none';
-      card.classList.add("spin");
+    function tickParticles(){
+      if(!ctx || !fxCanvas) return;
+      ctx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
+      for(let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.vy += 0.24; p.x += p.vx; p.y += p.vy; p.life -= 1;
+        ctx.globalAlpha = Math.max(0, p.life/100);
+        ctx.beginPath(); ctx.fillStyle = p.color; ctx.arc(p.x, p.y, p.size,0,Math.PI*2); ctx.fill();
+        if(p.life<=0){ particles.splice(i,1); }
+      }
+      if(particles.length>0) requestAnimationFrame(tickParticles);
+    }
 
-      setTimeout(() => {
-        // 1. Escoger rareza según probabilidades
-        const rarity = getRandomRarity();
+    function showEffectsForRarity(rarity){
+      const rect = cardEl.getBoundingClientRect();
+      const cx = rect.left + rect.width/2; const cy = rect.top + rect.height/2;
+      const colorMap = {
+        'Common':'#9aa0a6','Rare':'#3b82f6','Ultra Rare':'#7c3aed','Legendary':'#f59e0b','Mythical':'#ec4899','Divine':'#ff5a3c'
+      };
+      const col = colorMap[rarity] || '#fff';
+      // glow color
+      glowEl.style.background = `radial-gradient(circle at 50% 40%, ${col}20, transparent 40%)`;
+      if(['Legendary','Mythical','Divine'].includes(rarity)){
+        // big confetti + audio beep
+        spawnParticles(cx,cy,col,120);
+        if(particles.length>0) requestAnimationFrame(tickParticles);
+        playBeep(320,0.08,0.12);
+      } else if(rarity === 'Ultra Rare'){
+        spawnParticles(cx,cy,col,60); if(particles.length>0) requestAnimationFrame(tickParticles); playBeep(440,0.05,0.06);
+      } else if(rarity === 'Rare'){
+        spawnParticles(cx,cy,col,22); if(particles.length>0) requestAnimationFrame(tickParticles); playBeep(640,0.02,0.03);
+      }
+      // show glow briefly
+      cardEl.classList.add('show-glow'); setTimeout(()=>cardEl.classList.remove('show-glow'), 1200);
+    }
 
-        // 2. Filtrar solo los que tienen esa rareza (case-insensitive)
-        const filtered = pool.filter(s => (s.rarity || '').toLowerCase() === (rarity || '').toLowerCase());
+    function playBeep(freq=440,dur=0.06,volume=0.05){
+      try{
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ac.createOscillator(); const g = ac.createGain();
+        o.type='sine'; o.frequency.value = freq; g.gain.value = volume;
+        o.connect(g); g.connect(ac.destination);
+        o.start(); o.stop(ac.currentTime + dur);
+        setTimeout(()=>{ ac.close(); }, (dur+0.05)*1000);
+      }catch(e){/*audio not available*/}
+    }
 
-        // Si no hay ninguno de esa rareza, tratar de buscar la forma más cercana o fallback a cualquiera
-        let skill;
-        if (filtered.length > 0) {
-          skill = filtered[Math.floor(Math.random() * filtered.length)];
+    // --- Rolling logic ---
+    function rollOnce(){
+      rollBtn.disabled = true; cardEl.classList.add('rolling'); cardEl.setAttribute('aria-pressed','true');
+
+      // small UX: quick random flash names while 'rolling'
+      const pool = rawData[currentCategory] || [];
+      let flashInterval = setInterval(()=>{
+        const rnd = pool.length ? pool[Math.floor(Math.random()*pool.length)] : {name:'...'};
+        nameEl.textContent = rnd.name || '...'; typeEl.textContent = rnd.type || '';
+      },80);
+
+      setTimeout(()=>{
+        clearInterval(flashInterval);
+        // pick rarity by weights
+        const chosenRarity = pickRarity();
+        const item = findItem(currentCategory, chosenRarity);
+        // display
+        if(item){
+          const cssClass = 'rarity-' + chosenRarity.toLowerCase().replace(/\s+/g,'-');
+          // apply badge
+          rarityBadge.style.display='inline-block'; rarityBadge.textContent = chosenRarity;
+          rarityBadge.style.background = '#fff'; rarityBadge.style.color='#07080a';
+          rarityBadge.style.boxShadow = `0 6px 24px ${chosenRarity==='Divine'?'rgba(255,90,60,0.12)': 'rgba(0,0,0,0.2)'}`;
+
+          nameEl.textContent = item.name;
+          typeEl.textContent = item.type + ' — ' + item.rarity;
+          backDesc.textContent = item.description || '';
+          infoContent.innerHTML = `<strong>${item.name}</strong> <br><small style='color:var(--muted)'>${item.type} — ${item.rarity}</small><p style='margin-top:8px;color:var(--muted)'>${item.description || ''}</p>`;
+
+          // fx
+          showEffectsForRarity(item.rarity);
         } else {
-          // Try to find any item whose rarity matches a normalized key in rarityChances
-          const normalizedMap = {};
-          for (const it of pool) {
-            const key = (it.rarity || 'Common').toLowerCase();
-            if (!normalizedMap[key]) normalizedMap[key] = [];
-            normalizedMap[key].push(it);
-          }
-
-          const desired = (rarity || 'Common').toLowerCase();
-          if (normalizedMap[desired] && normalizedMap[desired].length > 0) {
-            skill = normalizedMap[desired][Math.floor(Math.random() * normalizedMap[desired].length)];
-          } else {
-            // fallback: pick any available item
-            skill = pool[Math.floor(Math.random() * pool.length)];
-          }
+          nameEl.textContent = '—'; typeEl.textContent='No result'; infoContent.textContent = 'No items found in this pool.';
         }
 
-        // Reset estilos
-        card.className = "card";
-
-        // Map rarity to CSS-safe class (lowercase, replace spaces/underscores with hyphen)
-        const cssClass = (skill.rarity || 'Common').toLowerCase().replace(/[_\s]+/g, '-');
-        card.classList.add(cssClass);
-
-        card.innerHTML = `<strong>${skill.name}</strong><br><small>${skill.type}</small>`;
-
-        infoBox.innerHTML = `
-          <p><strong>Name:</strong> ${skill.name}</p>
-          <p><strong>Type:</strong> ${skill.type}</p>
-          <p><strong>Rarity:</strong> ${skill.rarity}</p>
-          <p><strong>Description:</strong> ${skill.description}</p>
-        `;
-
-        // Re-enable controls
-        rollButton.disabled = false;
-        card.style.pointerEvents = '';
-      }, 500);
+        // end animation
+        cardEl.classList.remove('rolling'); rollBtn.disabled = false; cardEl.setAttribute('aria-pressed','false');
+      }, 900);
     }
 
-    function getRandomRarity() {
-      // Compute total so weights don't need to sum to 100
-      const entries = Object.entries(rarityChances);
-      const total = entries.reduce((s, [, c]) => s + (Number(c) || 0), 0);
-      if (total <= 0) return entries.length ? entries[0][0] : 'Common';
-
-      const rand = Math.random() * total;
-      let cumulative = 0;
-      for (let [rarity, chance] of entries) {
-        cumulative += (Number(chance) || 0);
-        if (rand <= cumulative) return rarity;
-      }
-      return entries.length ? entries[entries.length - 1][0] : 'Common'; // fallback
-    }
-
-    // Attach listeners after DOM is ready and render probabilities
-    window.addEventListener('DOMContentLoaded', () => {
-      card = document.getElementById('gachaCard');
-      infoBox = document.getElementById('info');
-      rollButton = document.getElementById('rollButton');
-      if (rollButton) rollButton.addEventListener('click', rollGacha);
-      if (card) card.addEventListener('click', rollGacha);
-      renderProbabilities();
+    // event bindings
+    document.querySelectorAll('.menu button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        document.querySelectorAll('.menu button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); currentCategory = b.dataset.cat; catLabel.textContent = currentCategory; nameEl.textContent = 'Click to roll'; typeEl.textContent = 'Category: '+currentCategory; rarityBadge.style.display='none';
+      });
     });
+
+    rollBtn.addEventListener('click', rollOnce);
+    cardEl.addEventListener('click', () => { if(!rollBtn.disabled) rollOnce(); });
+    cardEl.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if(!rollBtn.disabled) rollOnce(); }});
+
+    document.getElementById('copyBtn').addEventListener('click', ()=>{
+      const text = infoContent.innerText || 'No result yet.';
+      navigator.clipboard?.writeText(text).then(()=>{
+        const prev = document.getElementById('copyBtn').textContent; document.getElementById('copyBtn').textContent = 'Copied!';
+        setTimeout(()=>document.getElementById('copyBtn').textContent = prev,900);
+      }).catch(()=>{ alert('Clipboard not available'); });
+    });
+
+    // init
+    buildPools(); resizeCanvas(); renderProbabilities();
+
+    // If you plan to paste a HUGE DB, the buildPools() step still runs fast — we simply normalize and index once at startup.
+
   </script>
 </body>
 </html>
