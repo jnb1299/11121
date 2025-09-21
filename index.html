@@ -6,20 +6,39 @@
   <title>Chaos Gacha — Enhanced</title>
   <style>
     :root{
-      --bg:#08070b;
-      --panel:#0f1115;
-      --muted:#9aa0a6;
-      --accent: #ff8a00;
-      --glass: rgba(255,255,255,0.03);
+      /* refreshed, livelier palette */
+      --bg:#232425; /* gray-ish */
+      --bg-alt:#232425; /* same as gray-ish */
+      --panel:#082630; /* tealish panel */
+      --panel-alt:#042026; /* darker panel shade */
+      --muted:#c5d2d4; /* soft cyan for muted text */
+      --accent: #3f717a; /* bright cyan accent */
+      /* category color tokens (rgb for translucent use and hex for solid use) */
+      --cat-skills: #7dd3fc;
+      --cat-skills-rgb: 125,211,252;
+      --cat-traits: #a78bfa;
+      --cat-traits-rgb: 167,139,250;
+      --cat-items: #f59e0b;
+      --cat-items-rgb: 245,158,11;
+      --cat-powers: #34d399;
+      --cat-powers-rgb: 52,211,153;
+      --glass: rgba(255,255,255,0.04);
       --radius:12px;
       --card-w:260px;
       --card-h:140px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#e6edf3;background:linear-gradient(180deg,var(--bg),#060608);}
+  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#e6edf3;background:linear-gradient(180deg,var(--bg),var(--bg-alt));}
+
+    /* center the app in the viewport */
+    html, body { display: block; }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
 
     .app{
-      min-height:100vh;
+      /* ensure app does not force full viewport height so body centering works */
+      min-height: auto;
+      width: 100%;
+      max-width: 1100px;
       display:grid;
       grid-template-columns:260px 1fr;
       gap:28px;
@@ -29,7 +48,7 @@
 
     /* SIDE */
     .side{
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      background:linear-gradient(180deg, rgba(6,182,212,0.04), rgba(2,32,36,0.02));
       border-radius:var(--radius);
       padding:18px;
       border:1px solid rgba(255,255,255,0.03);
@@ -42,21 +61,36 @@
     .logo{font-weight:800;font-size:18px;color:var(--accent);letter-spacing:0.6px}
     .menu{display:flex;flex-direction:column;gap:8px}
     .menu button{
-      background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;text-align:left;cursor:pointer;font-weight:600;transition:all .18s;display:flex;justify-content:space-between;align-items:center;
+      background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:10px;text-align:left;cursor:pointer;font-weight:600;transition:all .18s;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden;
     }
-    .menu button.active{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff;border-color:rgba(255,255,255,0.06);transform:translateX(3px)}
+    /* colored accent bar on the left of each button */
+    .menu button::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:6px;border-radius:8px;transition:all .18s;opacity:0.95}
+    .menu button[data-cat="skills"]::before{background:var(--cat-skills)}
+    .menu button[data-cat="traits"]::before{background:var(--cat-traits)}
+    .menu button[data-cat="items"]::before{background:var(--cat-items)}
+    .menu button[data-cat="powers"]::before{background:var(--cat-powers)}
+
+    /* hover and active visuals — use subtle tinted backgrounds per category when active */
     .menu button:hover{transform:translateX(2px)}
+    .menu button.active{transform:translateX(3px);color:#fff;border-color:rgba(255,255,255,0.06)}
+    .menu button.active[data-cat="skills"]{background:linear-gradient(90deg, rgba(var(--cat-skills-rgb),0.08), rgba(255,255,255,0.01))}
+    .menu button.active[data-cat="traits"]{background:linear-gradient(90deg, rgba(var(--cat-traits-rgb),0.08), rgba(255,255,255,0.01))}
+    .menu button.active[data-cat="items"]{background:linear-gradient(90deg, rgba(var(--cat-items-rgb),0.08), rgba(255,255,255,0.01))}
+    .menu button.active[data-cat="powers"]{background:linear-gradient(90deg, rgba(var(--cat-powers-rgb),0.08), rgba(255,255,255,0.01))}
+
+    /* slightly widen the accent on hover for affordance */
+    .menu button:hover::before{width:9px}
 
     .probabilities{margin-top:8px;background:var(--glass);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
     .prob-row{display:flex;justify-content:space-between;margin:4px 0}
 
     /* MAIN */
     .main{display:flex;flex-direction:column;gap:18px}
-    .top-row{display:flex;gap:18px;align-items:flex-start}
+  .top-row{display:flex;gap:18px;align-items:center}
 
     .card-wrap{width:var(--card-w);height:var(--card-h);perspective:1000px;position:relative}
     .gacha-card{
-      width:100%;height:100%;border-radius:12px;background:linear-gradient(180deg,#0b0c10, #0f1115);border:2px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);
+  width:100%;height:100%;border-radius:12px;background:linear-gradient(180deg,var(--panel),var(--panel-alt));border:2px solid rgba(255,255,255,0.04);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;-webkit-user-select:none;user-select:none;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(2,32,36,0.55);
       transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.9,.3,1), box-shadow .25s;
     }
     .gacha-card.rolling{transform:rotateY(180deg) scale(1.02);}
@@ -70,17 +104,17 @@
     .rarity-badge{position:absolute;top:10px;left:10px;padding:6px 9px;border-radius:999px;font-weight:700;font-size:12px;color:#0b0c10;background:linear-gradient(90deg,#fff, #eee);opacity:0.95}
 
     /* Rarity colors */
-    .rarity-common{--r:#9aa0a6}
-    .rarity-rare{--r:#3b82f6}
-    .rarity-ultra-rare{--r:#7c3aed}
-    .rarity-legendary{--r:#f59e0b}
-    .rarity-mythical{--r:#ec4899}
-    .rarity-divine{--r:#ff5a3c}
-    .rarity-primordial{--r:#00b894}
-    .rarity-transcendental{--r:#00bcd4}
-    .rarity-limitless{--r:#ff0077}
-    .rarity-unbounded{--r:#ffd700}
-    .rarity-garbage{--r:#6b6b6b} 
+  .rarity-common{--r:#95a5a6} /* soft steel */
+  .rarity-rare{--r:#38bdf8} /* sky blue */
+  .rarity-ultra-rare{--r:#7c5cff} /* vivid purple */
+  .rarity-legendary{--r:#f59e0b} /* warm gold */
+  .rarity-mythical{--r:#ff66b2} /* bright pink */
+  .rarity-divine{--r:#ff6b5b} /* coral */
+  .rarity-primordial{--r:#00d38a} /* neon green */
+  .rarity-transcendental{--r:#06b6d4} /* cyan (accent) */
+  .rarity-limitless{--r:#ff4db8} /* magenta */
+  .rarity-unbounded{--r:#ffd166} /* sunny yellow */
+  .rarity-garbage{--r:#7f8a8c} /* muted gray */
 
     .gacha-card .glow{position:absolute;inset:-20%;filter:blur(28px);opacity:0;transition:opacity .25s}
     .gacha-card.show-glow .glow{opacity:0.9}
@@ -89,10 +123,19 @@
     .gacha-card .type{font-size:12px;color:var(--muted);margin-top:6px}
 
     .controls{display:flex;flex-direction:column;gap:8px;align-items:center}
-    .btn{padding:10px 18px;border-radius:10px;border:none;background:var(--accent);color:#071018;font-weight:800;cursor:pointer;letter-spacing:0.6px;box-shadow:0 6px 18px rgba(255,138,0,0.12)}
+  .btn{padding:10px 18px;border-radius:10px;border:none;background:var(--accent);color:#052026;font-weight:800;cursor:pointer;letter-spacing:0.6px;box-shadow:0 8px 24px rgba(6,182,212,0.12)}
     .btn:disabled{opacity:.5;cursor:default}
 
+  .btn-muted{background:#0f2b33;color:#d8f6fb;padding:8px 12px;font-weight:700}
+  .btn-dark{background:#072024;color:#dff7fb;padding:8px 12px;font-weight:700}
+
     .info{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);min-height:120px}
+
+  /* history UI */
+  .history{margin-top:12px;background:rgba(255,255,255,0.01);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);color:var(--muted)}
+  .history h4{margin:0 0 8px 0;color:var(--accent);font-weight:800}
+  .history-list{display:flex;gap:8px;flex-wrap:wrap}
+  .history-item{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);min-width:140px;font-size:13px}
 
     /* small screen */
     @media (max-width:900px){
@@ -112,7 +155,7 @@
 <body>
   <div class="app">
     <aside class="side" aria-label="menu">
-      <div class="logo">Chaos GACHA — Enhanced</div>
+      <div class="logo">My GACHA — lol</div>
       <div class="menu" role="tablist" aria-orientation="vertical">
         <button id="tab-skills" data-cat="skills" class="active">Skills <span style="opacity:.6;font-weight:600">(skills)</span></button>
         <button id="tab-traits" data-cat="traits">Traits</button>
@@ -120,7 +163,7 @@
         <button id="tab-powers" data-cat="powers">Powers</button>
       </div>
       <div class="probabilities" id="probabilities" aria-live="polite"></div>
-      <small style="color:var(--muted);margin-top:8px;display:block">Tip: click la carta o usa el botón para tirar.</small>
+      <small style="color:var(--muted);margin-top:8px;display:block">Tip: Not_Incide is a lil gay.</small>
     </aside>
 
     <main class="main">
@@ -146,6 +189,9 @@
           <div style="margin-top:6px">
             <button id="copyBtn" class="btn" style="background:#334155;color:#fff;padding:8px 12px;font-weight:700">Copy result</button>
           </div>
+          <div style="margin-top:8px">
+            <button id="helpBtn" class="btn" style="background:#0b1220;color:#fff;padding:8px 12px;font-weight:700">Help</button>
+          </div>
         </div>
 
         <canvas id="fx-canvas" aria-hidden="true"></canvas>
@@ -154,7 +200,30 @@
       <section class="info" id="infoBox" aria-live="polite">
         <div style="font-weight:800;color:var(--accent)">Result will appear here</div>
         <div id="infoContent" style="margin-top:8px;color:var(--muted)">Press <strong>Roll</strong> to spin the gacha. High rarities trigger particle effects and a small audio cue.</div>
+          <div class="history" aria-live="polite">
+            <h4>History (last 5)</h4>
+            <div class="history-list" id="historyList">
+              <!-- history items injected here -->
+            </div>
+          </div>
       </section>
+
+      <!-- Help modal -->
+      <div id="helpModal" aria-hidden="true" style="display:none">
+        <div id="helpOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000"></div>
+        <div id="helpContent" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);color:#fff;padding:18px;border-radius:12px;max-width:900px;width:90%;max-height:80vh;overflow:auto;z-index:10001;border:1px solid rgba(255,255,255,0.04)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <strong style="color:var(--accent);font-weight:800">Help & Options</strong>
+            <button id="helpClose" style="background:transparent;border:none;color:var(--muted);cursor:pointer">✕</button>
+          </div>
+          <div style="margin-bottom:12px;color:var(--muted)">Options:</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button id="showAllBtn" class="btn" style="background:#334155;color:#fff;padding:8px 10px;font-weight:700">Show every category</button>
+            <button id="copyAllBtn" class="btn" style="background:#2d3748;color:#fff;padding:8px 10px;font-weight:700">Copy all names</button>
+          </div>
+          <div id="helpResults" style="color:var(--muted)"></div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -172,7 +241,7 @@
       'Primordial': 0.3,
       'Transcendental': 0.15,
       'Limitless': 0.08,
-      'Unbounded': 0.02
+      'Unbounded': 0.02,
     };
 
     const rarityOrder = ['Unbounded','Limitless','Transcendental','Primordial','Divine','Mythical','Legendary','Ultra Rare','Rare','Common','Garbage'];
@@ -279,7 +348,7 @@
 
   items: [
     { name: "Excalibur", type: "Item", rarity: "Divine", description: "Sacred sword of overwhelming power." },
-    { name: "Enuma Elish (Ea)", type: "Item", rarity: "Divine", description: "Noble Phantasm that remakes reality." },
+    { name: "Enuma Elish (Ea)", type: "Item", rarity: "Transcendental", description: "Noble Phantasm that remakes reality." },
     { name: "Gate of Babylon", type: "Item", rarity: "Mythical", description: "Infinite arsenal of legendary treasures." },
     { name: "Caliburn", type: "Item", rarity: "Legendary", description: "Precursor to Excalibur, pure blade." },
     { name: "Avalon (Noble Relic)", type: "Item", rarity: "Mythical", description: "Regenerative protection and eternal shield." },
@@ -592,6 +661,9 @@
 
           // fx
           showEffectsForRarity(item.rarity);
+            // save to history (last 3 per category)
+            saveToHistory(currentCategory, { name: item.name, type: item.type, rarity: item.rarity });
+            renderHistory(currentCategory);
         } else {
           nameEl.textContent = '—'; typeEl.textContent='No result'; infoContent.textContent = 'No items found in this pool.';
         }
@@ -605,7 +677,7 @@
     document.querySelectorAll('.menu button').forEach(b=>{
       b.addEventListener('click', ()=>{
         document.querySelectorAll('.menu button').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active'); currentCategory = b.dataset.cat; catLabel.textContent = currentCategory; nameEl.textContent = 'Click to roll'; typeEl.textContent = 'Category: '+currentCategory; rarityBadge.style.display='none';
+  b.classList.add('active'); currentCategory = b.dataset.cat; catLabel.textContent = currentCategory; nameEl.textContent = 'Click to roll'; typeEl.textContent = 'Category: '+currentCategory; rarityBadge.style.display='none'; renderHistory(currentCategory);
       });
     });
 
@@ -623,12 +695,82 @@
 
     // init
     buildPools(); resizeCanvas(); renderProbabilities();
+      // HISTORY: localStorage-backed last 3 per category
+      const HISTORY_KEY = 'gacha_history_v1';
+      function loadHistory(){
+        try{ const raw = localStorage.getItem(HISTORY_KEY); return raw ? JSON.parse(raw) : {}; }catch(e){ return {}; }
+      }
+      function saveHistory(obj){ try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(obj)); }catch(e){}
+      }
+      function saveToHistory(category, item){
+        if(!category || !item) return;
+        const h = loadHistory(); if(!h[category]) h[category]=[];
+        // remove duplicates of same name (keep newest)
+        h[category] = h[category].filter(x=>x.name !== item.name);
+        h[category].unshift(item); // newest first
+    if(h[category].length > 5) h[category] = h[category].slice(0,5);
+        saveHistory(h);
+      }
+      function renderHistory(category){
+        const listEl = document.getElementById('historyList'); if(!listEl) return;
+        const h = loadHistory(); const arr = h[category] || [];
+        listEl.innerHTML = '';
+        if(arr.length===0){ listEl.innerHTML = '<div style="color:var(--muted)">No history yet for this category.</div>'; return; }
+        for(const it of arr){
+          const d = document.createElement('div'); d.className='history-item';
+          d.innerHTML = `<div style="font-weight:700;color:var(--accent)">${it.name}</div><div style="font-size:12px;color:var(--muted)">${it.type} — ${it.rarity}</div>`;
+          listEl.appendChild(d);
+        }
+      }
+
+      // render current category history on load
+      renderHistory(currentCategory);
+
+      // HELP modal behavior
+      const helpModal = document.getElementById('helpModal');
+      const helpOverlay = document.getElementById('helpOverlay');
+      const helpContent = document.getElementById('helpContent');
+      const helpResults = document.getElementById('helpResults');
+      document.getElementById('helpBtn').addEventListener('click', ()=>{
+        helpModal.style.display='block'; helpModal.setAttribute('aria-hidden','false'); helpResults.innerHTML='';
+      });
+      function closeHelp(){ helpModal.style.display='none'; helpModal.setAttribute('aria-hidden','true'); helpResults.innerHTML=''; }
+      document.getElementById('helpClose').addEventListener('click', closeHelp);
+      helpOverlay.addEventListener('click', closeHelp);
+
+      document.getElementById('showAllBtn').addEventListener('click', ()=>{
+        // render all categories/items
+        helpResults.innerHTML = '';
+        for(const cat of Object.keys(rawData)){
+          const heading = document.createElement('div'); heading.style.marginTop='8px'; heading.innerHTML = `<strong style="color:var(--accent)">${cat}</strong>`;
+          helpResults.appendChild(heading);
+          const ul = document.createElement('div'); ul.style.display='flex'; ul.style.flexWrap='wrap'; ul.style.gap='8px'; ul.style.marginTop='6px';
+          for(const it of rawData[cat]){
+            const pill = document.createElement('div'); pill.style.padding='6px 8px'; pill.style.borderRadius='8px'; pill.style.background='rgba(255,255,255,0.02)'; pill.style.border='1px solid rgba(255,255,255,0.02)'; pill.style.minWidth='120px'; pill.style.fontSize='13px';
+            pill.innerHTML = `<div style="font-weight:700;color:var(--accent)">${it.name}</div><div style="font-size:12px;color:var(--muted)">${it.type} — ${normalizeRarity(it.rarity)}</div>`;
+            ul.appendChild(pill);
+          }
+          helpResults.appendChild(ul);
+        }
+      });
+
+      document.getElementById('copyAllBtn').addEventListener('click', ()=>{
+        // copy all names across categories
+        const allNames = [];
+        for(const cat of Object.keys(rawData)) for(const it of rawData[cat]) allNames.push(it.name);
+        const txt = allNames.join('\n');
+        navigator.clipboard?.writeText(txt).then(()=>{
+          const prev = document.getElementById('copyAllBtn').textContent; document.getElementById('copyAllBtn').textContent = 'Copied!';
+          setTimeout(()=>document.getElementById('copyAllBtn').textContent = prev,900);
+        }).catch(()=>{ alert('Clipboard not available'); });
+      });
 
     // If you plan to paste a HUGE DB, the buildPools() step still runs fast — we simply normalize and index once at startup.
 
   </script>
 </body>
 </html>
+
 
 
 
